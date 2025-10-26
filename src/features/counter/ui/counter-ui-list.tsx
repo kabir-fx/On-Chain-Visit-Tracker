@@ -1,15 +1,15 @@
-import { UsersusersusersuserscounterUiCard } from './usersusersuserscounter-ui-card'
-import { useUsersusersusersuserscounterAccountsQuery } from '@/features/usersusersuserscounter/data-access/use-usersusersuserscounter-accounts-query'
+import { CounterUiCard } from './counter-ui-card'
+import { useCounterAccountsQuery } from '@/features/counter/data-access/use-counter-accounts-query'
 import { UiWalletAccount } from '@wallet-ui/react'
 
-export function UsersusersusersuserscounterUiList({ account }: { account: UiWalletAccount }) {
-  const usersusersuserscounterAccountsQuery = useUsersusersusersuserscounterAccountsQuery()
+export function CounterUiList({ account }: { account: UiWalletAccount }) {
+  const counterAccountsQuery = useCounterAccountsQuery()
 
-  if (usersusersuserscounterAccountsQuery.isLoading) {
+  if (counterAccountsQuery.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>
   }
 
-  if (!usersusersuserscounterAccountsQuery.data?.length) {
+  if (!counterAccountsQuery.data?.length) {
     return (
       <div className="text-center">
         <h2 className={'text-2xl'}>No accounts</h2>
@@ -20,8 +20,8 @@ export function UsersusersusersuserscounterUiList({ account }: { account: UiWall
 
   return (
     <div className="grid lg:grid-cols-2 gap-4">
-      {usersusersuserscounterAccountsQuery.data?.map((usersusersuserscounter) => (
-        <UsersusersusersuserscounterUiCard account={account} key={usersusersuserscounter.address} usersusersuserscounter={usersusersuserscounter} />
+      {counterAccountsQuery.data?.map((counter) => (
+        <CounterUiCard account={account} key={counter.address} counter={counter} />
       ))}
     </div>
   )

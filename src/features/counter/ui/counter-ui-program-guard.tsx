@@ -2,11 +2,11 @@ import { ReactNode } from 'react'
 
 import { AppAlert } from '@/components/app-alert'
 import { useSolana } from '@/components/solana/use-solana'
-import { useUsersusersusersuserscounterProgram } from '@/features/usersusersuserscounter/data-access/use-usersusersuserscounter-program'
+import { useCounterProgram } from '@/features/counter/data-access/use-counter-program'
 
-export function UsersusersusersuserscounterUiProgramGuard({ children }: { children: ReactNode }) {
+export function CounterUiProgramGuard({ children }: { children: ReactNode }) {
   const { cluster } = useSolana()
-  const programAccountQuery = useUsersusersusersuserscounterProgram()
+  const programAccountQuery = useCounterProgram()
 
   if (programAccountQuery.isLoading) {
     return <span className="loading loading-spinner loading-lg"></span>

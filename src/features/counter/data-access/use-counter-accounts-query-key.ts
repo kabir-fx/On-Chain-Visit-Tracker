@@ -1,7 +1,7 @@
 import { useSolana } from '@/components/solana/use-solana'
 
-export function useUsersusersusersuserscounterAccountsQueryKey() {
+export function useCounterAccountsQueryKey() {
   const { cluster } = useSolana()
 
-  return ['usersusersuserscounter', 'accounts', { cluster }]
+  return ['counter', 'accounts', { cluster }]
 }

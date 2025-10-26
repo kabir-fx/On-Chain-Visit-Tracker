@@ -11,7 +11,7 @@ import { toast } from 'sonner'
 // polyfill ed25519 for browsers (to allow `generateKeyPairSigner` to work)
 installEd25519()
 
-export function useUsersusersusersuserscounterInitializeMutation({ account }: { account: UiWalletAccount }) {
+export function useCounterInitializeMutation({ account }: { account: UiWalletAccount }) {
   const { cluster } = useSolana()
   const queryClient = useQueryClient()
   const signer = useWalletUiSigner({ account })
@@ -19,12 +19,12 @@ export function useUsersusersusersuserscounterInitializeMutation({ account }: { 
 
   return useMutation({
     mutationFn: async () => {
-      const usersusersuserscounter = await generateKeyPairSigner()
-      return await signAndSend(getInitializeInstruction({ payer: signer, usersusersuserscounter }), signer)
+      const counter = await generateKeyPairSigner()
+      return await signAndSend(getInitializeInstruction({ payer: signer, usersusersuserscounter: counter }), signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx)
-      await queryClient.invalidateQueries({ queryKey: ['usersusersuserscounter', 'accounts', { cluster }] })
+      await queryClient.invalidateQueries({ queryKey: ['counter', 'accounts', { cluster }] })
     },
     onError: () => toast.error('Failed to run program'),
   })

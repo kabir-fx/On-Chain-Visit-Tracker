@@ -1,6 +1,6 @@
 'use client'
-import UsersusersusersuserscounterFeature from '@/features/usersusersuserscounter/usersusersuserscounter-feature'
+import CounterFeature from '@/features/counter/counter-feature'
 
 export default function Page() {
-  return <UsersusersusersuserscounterFeature />
+  return <CounterFeature />
 }

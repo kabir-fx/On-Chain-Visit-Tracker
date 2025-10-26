@@ -2,26 +2,26 @@ import { UsersusersusersuserscounterAccount } from '@project/anchor'
 import { ellipsify, UiWalletAccount } from '@wallet-ui/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppExplorerLink } from '@/components/app-explorer-link'
-import { UsersusersusersuserscounterUiButtonClose } from './usersusersuserscounter-ui-button-close'
-import { UsersusersusersuserscounterUiButtonDecrement } from './usersusersuserscounter-ui-button-decrement'
-import { UsersusersusersuserscounterUiButtonIncrement } from './usersusersuserscounter-ui-button-increment'
-import { UsersusersusersuserscounterUiButtonSet } from './usersusersuserscounter-ui-button-set'
+import { CounterUiButtonClose } from './counter-ui-button-close'
+import { CounterUiButtonDecrement } from './counter-ui-button-decrement'
+import { CounterUiButtonIncrement } from './counter-ui-button-increment'
+import { CounterUiButtonSet } from './counter-ui-button-set'
 
-export function UsersusersusersuserscounterUiCard({ account, usersusersuserscounter }: { account: UiWalletAccount; usersusersuserscounter: UsersusersusersuserscounterAccount }) {
+export function CounterUiCard({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Usersusersusersuserscounter: {usersusersuserscounter.data.count}</CardTitle>
+        <CardTitle>Counter: {counter.data.count}</CardTitle>
         <CardDescription>
-          Account: <AppExplorerLink address={usersusersuserscounter.address} label={ellipsify(usersusersuserscounter.address)} />
+          Account: <AppExplorerLink address={counter.address} label={ellipsify(counter.address)} />
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="flex gap-4 justify-evenly">
-          <UsersusersusersuserscounterUiButtonIncrement account={account} usersusersuserscounter={usersusersuserscounter} />
-          <UsersusersusersuserscounterUiButtonSet account={account} usersusersuserscounter={usersusersuserscounter} />
-          <UsersusersusersuserscounterUiButtonDecrement account={account} usersusersuserscounter={usersusersuserscounter} />
-          <UsersusersusersuserscounterUiButtonClose account={account} usersusersuserscounter={usersusersuserscounter} />
+          <CounterUiButtonIncrement account={account} counter={counter} />
+          <CounterUiButtonSet account={account} counter={counter} />
+          <CounterUiButtonDecrement account={account} counter={counter} />
+          <CounterUiButtonClose account={account} counter={counter} />
         </div>
       </CardContent>
     </Card>

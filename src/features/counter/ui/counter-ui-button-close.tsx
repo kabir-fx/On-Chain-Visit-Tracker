@@ -2,10 +2,10 @@ import { UsersusersusersuserscounterAccount } from '@project/anchor'
 import { UiWalletAccount } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 
-import { useUsersusersusersuserscounterCloseMutation } from '@/features/usersusersuserscounter/data-access/use-usersusersuserscounter-close-mutation'
+import { useCounterCloseMutation } from '@/features/counter/data-access/use-counter-close-mutation'
 
-export function UsersusersusersuserscounterUiButtonClose({ account, usersusersuserscounter }: { account: UiWalletAccount; usersusersuserscounter: UsersusersusersuserscounterAccount }) {
-  const closeMutation = useUsersusersusersuserscounterCloseMutation({ account, usersusersuserscounter })
+export function CounterUiButtonClose({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
+  const closeMutation = useCounterCloseMutation({ account, counter })
 
   return (
     <Button

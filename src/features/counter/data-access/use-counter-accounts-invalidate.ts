@@ -1,9 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query'
-import { useUsersusersusersuserscounterAccountsQueryKey } from './use-usersusersuserscounter-accounts-query-key'
+import { useCounterAccountsQueryKey } from './use-counter-accounts-query-key'
 
-export function useUsersusersusersuserscounterAccountsInvalidate() {
+export function useCounterAccountsInvalidate() {
   const queryClient = useQueryClient()
-  const queryKey = useUsersusersusersuserscounterAccountsQueryKey()
+  const queryKey = useCounterAccountsQueryKey()
 
   return () => queryClient.invalidateQueries({ queryKey })
 }

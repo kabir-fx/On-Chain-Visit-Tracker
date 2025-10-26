@@ -1,13 +1,13 @@
 import { useSolana } from '@/components/solana/use-solana'
 import { useQuery } from '@tanstack/react-query'
 import { getUsersusersusersuserscounterProgramAccounts } from '@project/anchor'
-import { useUsersusersusersuserscounterAccountsQueryKey } from './use-usersusersuserscounter-accounts-query-key'
+import { useCounterAccountsQueryKey } from './use-counter-accounts-query-key'
 
-export function useUsersusersusersuserscounterAccountsQuery() {
+export function useCounterAccountsQuery() {
   const { client } = useSolana()
 
   return useQuery({
-    queryKey: useUsersusersusersuserscounterAccountsQueryKey(),
+    queryKey: useCounterAccountsQueryKey(),
     queryFn: async () => await getUsersusersusersuserscounterProgramAccounts(client.rpc),
   })
 }
