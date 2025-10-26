@@ -1,10 +1,10 @@
-import { UsersusersusersuserscounterAccount } from '@project/anchor'
+import { CounterAccount } from '@project/anchor'
 import { UiWalletAccount } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 
 import { useCounterSetMutation } from '@/features/counter/data-access/use-counter-set-mutation'
 
-export function CounterUiButtonSet({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
+export function CounterUiButtonSet({ account, counter }: { account: UiWalletAccount; counter: CounterAccount }) {
   const setMutation = useCounterSetMutation({ account, counter })
 
   return (

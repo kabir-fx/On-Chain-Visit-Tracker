@@ -1,11 +1,11 @@
-import { UsersusersusersuserscounterAccount, getSetInstruction } from '@project/anchor'
+import { CounterAccount, getSetInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 import { useWalletUiSignAndSend } from '@wallet-ui/react-gill'
 import { toastTx } from '@/components/toast-tx'
 import { useCounterAccountsInvalidate } from './use-counter-accounts-invalidate'
 
-export function useCounterSetMutation({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
+export function useCounterSetMutation({ account, counter }: { account: UiWalletAccount; counter: CounterAccount }) {
   const invalidateAccounts = useCounterAccountsInvalidate()
   const signAndSend = useWalletUiSignAndSend()
   const signer = useWalletUiSigner({ account })
@@ -14,7 +14,7 @@ export function useCounterSetMutation({ account, counter }: { account: UiWalletA
     mutationFn: async (value: number) =>
       await signAndSend(
         getSetInstruction({
-          usersusersuserscounter: counter.address,
+          counter: counter.address,
           value,
         }),
         signer,

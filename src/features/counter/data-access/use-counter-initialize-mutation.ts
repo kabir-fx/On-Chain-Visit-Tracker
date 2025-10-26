@@ -20,7 +20,7 @@ export function useCounterInitializeMutation({ account }: { account: UiWalletAcc
   return useMutation({
     mutationFn: async () => {
       const counter = await generateKeyPairSigner()
-      return await signAndSend(getInitializeInstruction({ payer: signer, usersusersuserscounter: counter }), signer)
+      return await signAndSend(getInitializeInstruction({ payer: signer, counter: counter }), signer)
     },
     onSuccess: async (tx) => {
       toastTx(tx)

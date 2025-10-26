@@ -29,7 +29,7 @@ import {
   type TransactionSigner,
   type WritableSignerAccount,
 } from 'gill';
-import { USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS } from '../programs';
+import { COUNTER_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const INITIALIZE_DISCRIMINATOR = new Uint8Array([
@@ -41,9 +41,9 @@ export function getInitializeDiscriminatorBytes() {
 }
 
 export type InitializeInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountPayer extends string | AccountMeta<string> = string,
-  TAccountUsersusersuserscounter extends string | AccountMeta<string> = string,
+  TAccountCounter extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | AccountMeta<string> = '11111111111111111111111111111111',
@@ -56,10 +56,10 @@ export type InitializeInstruction<
         ? WritableSignerAccount<TAccountPayer> &
             AccountSignerMeta<TAccountPayer>
         : TAccountPayer,
-      TAccountUsersusersuserscounter extends string
-        ? WritableSignerAccount<TAccountUsersusersuserscounter> &
-            AccountSignerMeta<TAccountUsersusersuserscounter>
-        : TAccountUsersusersuserscounter,
+      TAccountCounter extends string
+        ? WritableSignerAccount<TAccountCounter> &
+            AccountSignerMeta<TAccountCounter>
+        : TAccountCounter,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -96,44 +96,35 @@ export function getInitializeInstructionDataCodec(): FixedSizeCodec<
 
 export type InitializeInput<
   TAccountPayer extends string = string,
-  TAccountUsersusersuserscounter extends string = string,
+  TAccountCounter extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   payer: TransactionSigner<TAccountPayer>;
-  usersusersuserscounter: TransactionSigner<TAccountUsersusersuserscounter>;
+  counter: TransactionSigner<TAccountCounter>;
   systemProgram?: Address<TAccountSystemProgram>;
 };
 
 export function getInitializeInstruction<
   TAccountPayer extends string,
-  TAccountUsersusersuserscounter extends string,
+  TAccountCounter extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends
-    Address = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: InitializeInput<
-    TAccountPayer,
-    TAccountUsersusersuserscounter,
-    TAccountSystemProgram
-  >,
+  input: InitializeInput<TAccountPayer, TAccountCounter, TAccountSystemProgram>,
   config?: { programAddress?: TProgramAddress }
 ): InitializeInstruction<
   TProgramAddress,
   TAccountPayer,
-  TAccountUsersusersuserscounter,
+  TAccountCounter,
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? COUNTER_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
     payer: { value: input.payer ?? null, isWritable: true },
-    usersusersuserscounter: {
-      value: input.usersusersuserscounter ?? null,
-      isWritable: true,
-    },
+    counter: { value: input.counter ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -151,7 +142,7 @@ export function getInitializeInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.payer),
-      getAccountMeta(accounts.usersusersuserscounter),
+      getAccountMeta(accounts.counter),
       getAccountMeta(accounts.systemProgram),
     ],
     data: getInitializeInstructionDataEncoder().encode({}),
@@ -159,19 +150,19 @@ export function getInitializeInstruction<
   } as InitializeInstruction<
     TProgramAddress,
     TAccountPayer,
-    TAccountUsersusersuserscounter,
+    TAccountCounter,
     TAccountSystemProgram
   >);
 }
 
 export type ParsedInitializeInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
     payer: TAccountMetas[0];
-    usersusersuserscounter: TAccountMetas[1];
+    counter: TAccountMetas[1];
     systemProgram: TAccountMetas[2];
   };
   data: InitializeInstructionData;
@@ -199,7 +190,7 @@ export function parseInitializeInstruction<
     programAddress: instruction.programAddress,
     accounts: {
       payer: getNextAccount(),
-      usersusersuserscounter: getNextAccount(),
+      counter: getNextAccount(),
       systemProgram: getNextAccount(),
     },
     data: getInitializeInstructionDataDecoder().decode(instruction.data),

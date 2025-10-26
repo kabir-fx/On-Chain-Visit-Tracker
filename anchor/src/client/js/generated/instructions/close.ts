@@ -29,7 +29,7 @@ import {
   type WritableAccount,
   type WritableSignerAccount,
 } from 'gill';
-import { USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS } from '../programs';
+import { COUNTER_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const CLOSE_DISCRIMINATOR = new Uint8Array([
@@ -41,9 +41,9 @@ export function getCloseDiscriminatorBytes() {
 }
 
 export type CloseInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountPayer extends string | AccountMeta<string> = string,
-  TAccountUsersusersuserscounter extends string | AccountMeta<string> = string,
+  TAccountCounter extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
@@ -53,9 +53,9 @@ export type CloseInstruction<
         ? WritableSignerAccount<TAccountPayer> &
             AccountSignerMeta<TAccountPayer>
         : TAccountPayer,
-      TAccountUsersusersuserscounter extends string
-        ? WritableAccount<TAccountUsersusersuserscounter>
-        : TAccountUsersusersuserscounter,
+      TAccountCounter extends string
+        ? WritableAccount<TAccountCounter>
+        : TAccountCounter,
       ...TRemainingAccounts,
     ]
   >;
@@ -89,36 +89,27 @@ export function getCloseInstructionDataCodec(): FixedSizeCodec<
 
 export type CloseInput<
   TAccountPayer extends string = string,
-  TAccountUsersusersuserscounter extends string = string,
+  TAccountCounter extends string = string,
 > = {
   payer: TransactionSigner<TAccountPayer>;
-  usersusersuserscounter: Address<TAccountUsersusersuserscounter>;
+  counter: Address<TAccountCounter>;
 };
 
 export function getCloseInstruction<
   TAccountPayer extends string,
-  TAccountUsersusersuserscounter extends string,
-  TProgramAddress extends
-    Address = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TAccountCounter extends string,
+  TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: CloseInput<TAccountPayer, TAccountUsersusersuserscounter>,
+  input: CloseInput<TAccountPayer, TAccountCounter>,
   config?: { programAddress?: TProgramAddress }
-): CloseInstruction<
-  TProgramAddress,
-  TAccountPayer,
-  TAccountUsersusersuserscounter
-> {
+): CloseInstruction<TProgramAddress, TAccountPayer, TAccountCounter> {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? COUNTER_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
     payer: { value: input.payer ?? null, isWritable: true },
-    usersusersuserscounter: {
-      value: input.usersusersuserscounter ?? null,
-      isWritable: true,
-    },
+    counter: { value: input.counter ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -129,25 +120,21 @@ export function getCloseInstruction<
   return Object.freeze({
     accounts: [
       getAccountMeta(accounts.payer),
-      getAccountMeta(accounts.usersusersuserscounter),
+      getAccountMeta(accounts.counter),
     ],
     data: getCloseInstructionDataEncoder().encode({}),
     programAddress,
-  } as CloseInstruction<
-    TProgramAddress,
-    TAccountPayer,
-    TAccountUsersusersuserscounter
-  >);
+  } as CloseInstruction<TProgramAddress, TAccountPayer, TAccountCounter>);
 }
 
 export type ParsedCloseInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
     payer: TAccountMetas[0];
-    usersusersuserscounter: TAccountMetas[1];
+    counter: TAccountMetas[1];
   };
   data: CloseInstructionData;
 };
@@ -172,10 +159,7 @@ export function parseCloseInstruction<
   };
   return {
     programAddress: instruction.programAddress,
-    accounts: {
-      payer: getNextAccount(),
-      usersusersuserscounter: getNextAccount(),
-    },
+    accounts: { payer: getNextAccount(), counter: getNextAccount() },
     data: getCloseInstructionDataDecoder().decode(instruction.data),
   };
 }

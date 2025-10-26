@@ -21,34 +21,34 @@ import {
   type ParsedSetInstruction,
 } from '../instructions';
 
-export const USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS =
-  '2jb8Qq7CgGMaE15f6ZTB7UFCMsiD2sUyPyFxru5MEKg9' as Address<'2jb8Qq7CgGMaE15f6ZTB7UFCMsiD2sUyPyFxru5MEKg9'>;
+export const COUNTER_PROGRAM_ADDRESS =
+  '5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9' as Address<'5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9'>;
 
-export enum UsersusersuserscounterAccount {
-  Usersusersusersuserscounter,
+export enum CounterAccount {
+  Counter,
 }
 
-export function identifyUsersusersuserscounterAccount(
+export function identifyCounterAccount(
   account: { data: ReadonlyUint8Array } | ReadonlyUint8Array
-): UsersusersuserscounterAccount {
+): CounterAccount {
   const data = 'data' in account ? account.data : account;
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([90, 78, 160, 206, 106, 30, 6, 253])
+        new Uint8Array([255, 176, 4, 245, 188, 253, 124, 25])
       ),
       0
     )
   ) {
-    return UsersusersuserscounterAccount.Usersusersusersuserscounter;
+    return CounterAccount.Counter;
   }
   throw new Error(
-    'The provided account could not be identified as a usersusersuserscounter account.'
+    'The provided account could not be identified as a counter account.'
   );
 }
 
-export enum UsersusersuserscounterInstruction {
+export enum CounterInstruction {
   Close,
   Decrement,
   Increment,
@@ -56,9 +56,9 @@ export enum UsersusersuserscounterInstruction {
   Set,
 }
 
-export function identifyUsersusersuserscounterInstruction(
+export function identifyCounterInstruction(
   instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
-): UsersusersuserscounterInstruction {
+): CounterInstruction {
   const data = 'data' in instruction ? instruction.data : instruction;
   if (
     containsBytes(
@@ -69,7 +69,7 @@ export function identifyUsersusersuserscounterInstruction(
       0
     )
   ) {
-    return UsersusersuserscounterInstruction.Close;
+    return CounterInstruction.Close;
   }
   if (
     containsBytes(
@@ -80,7 +80,7 @@ export function identifyUsersusersuserscounterInstruction(
       0
     )
   ) {
-    return UsersusersuserscounterInstruction.Decrement;
+    return CounterInstruction.Decrement;
   }
   if (
     containsBytes(
@@ -91,7 +91,7 @@ export function identifyUsersusersuserscounterInstruction(
       0
     )
   ) {
-    return UsersusersuserscounterInstruction.Increment;
+    return CounterInstruction.Increment;
   }
   if (
     containsBytes(
@@ -102,7 +102,7 @@ export function identifyUsersusersuserscounterInstruction(
       0
     )
   ) {
-    return UsersusersuserscounterInstruction.Initialize;
+    return CounterInstruction.Initialize;
   }
   if (
     containsBytes(
@@ -113,28 +113,28 @@ export function identifyUsersusersuserscounterInstruction(
       0
     )
   ) {
-    return UsersusersuserscounterInstruction.Set;
+    return CounterInstruction.Set;
   }
   throw new Error(
-    'The provided instruction could not be identified as a usersusersuserscounter instruction.'
+    'The provided instruction could not be identified as a counter instruction.'
   );
 }
 
-export type ParsedUsersusersuserscounterInstruction<
-  TProgram extends string = '2jb8Qq7CgGMaE15f6ZTB7UFCMsiD2sUyPyFxru5MEKg9',
+export type ParsedCounterInstruction<
+  TProgram extends string = '5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9',
 > =
   | ({
-      instructionType: UsersusersuserscounterInstruction.Close;
+      instructionType: CounterInstruction.Close;
     } & ParsedCloseInstruction<TProgram>)
   | ({
-      instructionType: UsersusersuserscounterInstruction.Decrement;
+      instructionType: CounterInstruction.Decrement;
     } & ParsedDecrementInstruction<TProgram>)
   | ({
-      instructionType: UsersusersuserscounterInstruction.Increment;
+      instructionType: CounterInstruction.Increment;
     } & ParsedIncrementInstruction<TProgram>)
   | ({
-      instructionType: UsersusersuserscounterInstruction.Initialize;
+      instructionType: CounterInstruction.Initialize;
     } & ParsedInitializeInstruction<TProgram>)
   | ({
-      instructionType: UsersusersuserscounterInstruction.Set;
+      instructionType: CounterInstruction.Set;
     } & ParsedSetInstruction<TProgram>);

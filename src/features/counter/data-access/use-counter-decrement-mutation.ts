@@ -1,4 +1,4 @@
-import { UsersusersusersuserscounterAccount, getDecrementInstruction } from '@project/anchor'
+import { CounterAccount, getDecrementInstruction } from '@project/anchor'
 import { useMutation } from '@tanstack/react-query'
 import { UiWalletAccount, useWalletUiSigner } from '@wallet-ui/react'
 import { useWalletUiSignAndSend } from '@wallet-ui/react-gill'
@@ -10,14 +10,14 @@ export function useCounterDecrementMutation({
   counter,
 }: {
   account: UiWalletAccount
-  counter: UsersusersusersuserscounterAccount
+  counter: CounterAccount
 }) {
   const invalidateAccounts = useCounterAccountsInvalidate()
   const signer = useWalletUiSigner({ account })
   const signAndSend = useWalletUiSignAndSend()
 
   return useMutation({
-    mutationFn: async () => await signAndSend(getDecrementInstruction({ usersusersuserscounter: counter.address }), signer),
+    mutationFn: async () => await signAndSend(getDecrementInstruction({ counter: counter.address }), signer),
     onSuccess: async (tx) => {
       toastTx(tx)
       await invalidateAccounts()

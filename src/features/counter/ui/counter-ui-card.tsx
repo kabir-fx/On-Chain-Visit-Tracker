@@ -1,4 +1,4 @@
-import { UsersusersusersuserscounterAccount } from '@project/anchor'
+import { CounterAccount } from '@project/anchor'
 import { ellipsify, UiWalletAccount } from '@wallet-ui/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { AppExplorerLink } from '@/components/app-explorer-link'
@@ -7,7 +7,7 @@ import { CounterUiButtonDecrement } from './counter-ui-button-decrement'
 import { CounterUiButtonIncrement } from './counter-ui-button-increment'
 import { CounterUiButtonSet } from './counter-ui-button-set'
 
-export function CounterUiCard({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
+export function CounterUiCard({ account, counter }: { account: UiWalletAccount; counter: CounterAccount }) {
   return (
     <Card>
       <CardHeader>

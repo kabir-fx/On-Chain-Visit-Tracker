@@ -1,7 +1,7 @@
 {
-  "address": "Count3AcZucFDPSFBAeHkQ6AvttieKUkyJ8HiQGhQwe",
+  "address": "5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9",
   "metadata": {
-    "name": "usersusersuserscounter",
+    "name": "counter",
     "version": "0.1.0",
     "spec": "0.1.0",
     "description": "Created with Anchor"
@@ -9,7 +9,16 @@
   "instructions": [
     {
       "name": "close",
-      "discriminator": [98, 165, 201, 177, 108, 65, 206, 96],
+      "discriminator": [
+        98,
+        165,
+        201,
+        177,
+        108,
+        65,
+        206,
+        96
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -17,7 +26,7 @@
           "signer": true
         },
         {
-          "name": "usersusersuserscounter",
+          "name": "counter",
           "writable": true
         }
       ],
@@ -25,10 +34,19 @@
     },
     {
       "name": "decrement",
-      "discriminator": [106, 227, 168, 59, 248, 27, 150, 101],
+      "discriminator": [
+        106,
+        227,
+        168,
+        59,
+        248,
+        27,
+        150,
+        101
+      ],
       "accounts": [
         {
-          "name": "usersusersuserscounter",
+          "name": "counter",
           "writable": true
         }
       ],
@@ -36,10 +54,19 @@
     },
     {
       "name": "increment",
-      "discriminator": [11, 18, 104, 9, 104, 174, 59, 33],
+      "discriminator": [
+        11,
+        18,
+        104,
+        9,
+        104,
+        174,
+        59,
+        33
+      ],
       "accounts": [
         {
-          "name": "usersusersuserscounter",
+          "name": "counter",
           "writable": true
         }
       ],
@@ -47,7 +74,16 @@
     },
     {
       "name": "initialize",
-      "discriminator": [175, 175, 109, 31, 13, 152, 155, 237],
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
       "accounts": [
         {
           "name": "payer",
@@ -55,7 +91,7 @@
           "signer": true
         },
         {
-          "name": "usersusersuserscounter",
+          "name": "counter",
           "writable": true,
           "signer": true
         },
@@ -68,10 +104,19 @@
     },
     {
       "name": "set",
-      "discriminator": [198, 51, 53, 241, 116, 29, 126, 194],
+      "discriminator": [
+        198,
+        51,
+        53,
+        241,
+        116,
+        29,
+        126,
+        194
+      ],
       "accounts": [
         {
-          "name": "usersusersuserscounter",
+          "name": "counter",
           "writable": true
         }
       ],
@@ -85,13 +130,22 @@
   ],
   "accounts": [
     {
-      "name": "Usersusersusersuserscounter",
-      "discriminator": [255, 176, 4, 245, 188, 253, 124, 25]
+      "name": "Counter",
+      "discriminator": [
+        255,
+        176,
+        4,
+        245,
+        188,
+        253,
+        124,
+        25
+      ]
     }
   ],
   "types": [
     {
-      "name": "Usersusersusersuserscounter",
+      "name": "Counter",
       "type": {
         "kind": "struct",
         "fields": [

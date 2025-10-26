@@ -26,7 +26,7 @@ import {
   type ReadonlyUint8Array,
   type WritableAccount,
 } from 'gill';
-import { USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS } from '../programs';
+import { COUNTER_PROGRAM_ADDRESS } from '../programs';
 import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
 
 export const DECREMENT_DISCRIMINATOR = new Uint8Array([
@@ -38,16 +38,16 @@ export function getDecrementDiscriminatorBytes() {
 }
 
 export type DecrementInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
-  TAccountUsersusersuserscounter extends string | AccountMeta<string> = string,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
+  TAccountCounter extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
 > = Instruction<TProgram> &
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountUsersusersuserscounter extends string
-        ? WritableAccount<TAccountUsersusersuserscounter>
-        : TAccountUsersusersuserscounter,
+      TAccountCounter extends string
+        ? WritableAccount<TAccountCounter>
+        : TAccountCounter,
       ...TRemainingAccounts,
     ]
   >;
@@ -79,30 +79,23 @@ export function getDecrementInstructionDataCodec(): FixedSizeCodec<
   );
 }
 
-export type DecrementInput<
-  TAccountUsersusersuserscounter extends string = string,
-> = {
-  usersusersuserscounter: Address<TAccountUsersusersuserscounter>;
+export type DecrementInput<TAccountCounter extends string = string> = {
+  counter: Address<TAccountCounter>;
 };
 
 export function getDecrementInstruction<
-  TAccountUsersusersuserscounter extends string,
-  TProgramAddress extends
-    Address = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TAccountCounter extends string,
+  TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: DecrementInput<TAccountUsersusersuserscounter>,
+  input: DecrementInput<TAccountCounter>,
   config?: { programAddress?: TProgramAddress }
-): DecrementInstruction<TProgramAddress, TAccountUsersusersuserscounter> {
+): DecrementInstruction<TProgramAddress, TAccountCounter> {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? COUNTER_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
-    usersusersuserscounter: {
-      value: input.usersusersuserscounter ?? null,
-      isWritable: true,
-    },
+    counter: { value: input.counter ?? null, isWritable: true },
   };
   const accounts = originalAccounts as Record<
     keyof typeof originalAccounts,
@@ -111,19 +104,19 @@ export function getDecrementInstruction<
 
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
-    accounts: [getAccountMeta(accounts.usersusersuserscounter)],
+    accounts: [getAccountMeta(accounts.counter)],
     data: getDecrementInstructionDataEncoder().encode({}),
     programAddress,
-  } as DecrementInstruction<TProgramAddress, TAccountUsersusersuserscounter>);
+  } as DecrementInstruction<TProgramAddress, TAccountCounter>);
 }
 
 export type ParsedDecrementInstruction<
-  TProgram extends string = typeof USERSUSERSUSERSCOUNTER_PROGRAM_ADDRESS,
+  TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
-    usersusersuserscounter: TAccountMetas[0];
+    counter: TAccountMetas[0];
   };
   data: DecrementInstructionData;
 };
@@ -148,7 +141,7 @@ export function parseDecrementInstruction<
   };
   return {
     programAddress: instruction.programAddress,
-    accounts: { usersusersuserscounter: getNextAccount() },
+    accounts: { counter: getNextAccount() },
     data: getDecrementInstructionDataDecoder().decode(instruction.data),
   };
 }

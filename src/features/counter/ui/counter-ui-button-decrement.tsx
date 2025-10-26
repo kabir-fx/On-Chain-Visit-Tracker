@@ -1,10 +1,10 @@
-import { UsersusersusersuserscounterAccount } from '@project/anchor'
+import { CounterAccount } from '@project/anchor'
 import { UiWalletAccount } from '@wallet-ui/react'
 import { Button } from '@/components/ui/button'
 
 import { useCounterDecrementMutation } from '../data-access/use-counter-decrement-mutation'
 
-export function CounterUiButtonDecrement({ account, counter }: { account: UiWalletAccount; counter: UsersusersusersuserscounterAccount }) {
+export function CounterUiButtonDecrement({ account, counter }: { account: UiWalletAccount; counter: CounterAccount }) {
   const decrementMutation = useCounterDecrementMutation({ account, counter })
 
   return (
