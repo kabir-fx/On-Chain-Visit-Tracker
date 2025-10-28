@@ -19,6 +19,8 @@ import {
   getBytesEncoder,
   getStructDecoder,
   getStructEncoder,
+  getU64Decoder,
+  getU64Encoder,
   getU8Decoder,
   getU8Encoder,
   transformEncoder,
@@ -43,15 +45,41 @@ export function getCounterDiscriminatorBytes() {
   return fixEncoderSize(getBytesEncoder(), 8).encode(COUNTER_DISCRIMINATOR);
 }
 
-export type Counter = { discriminator: ReadonlyUint8Array; count: number };
+export type Counter = {
+  discriminator: ReadonlyUint8Array;
+  /**
+   * Total number of unique visits recorded
+   * Uses u64 to support large numbers (up to ~18 quintillion)
+   */
+  count: bigint;
+  /**
+   * Bump seed for PDA address derivation
+   * Stored to enable future PDA address recreation
+   * Range: 0-255
+   */
+  bump: number;
+};
 
-export type CounterArgs = { count: number };
+export type CounterArgs = {
+  /**
+   * Total number of unique visits recorded
+   * Uses u64 to support large numbers (up to ~18 quintillion)
+   */
+  count: number | bigint;
+  /**
+   * Bump seed for PDA address derivation
+   * Stored to enable future PDA address recreation
+   * Range: 0-255
+   */
+  bump: number;
+};
 
 export function getCounterEncoder(): FixedSizeEncoder<CounterArgs> {
   return transformEncoder(
     getStructEncoder([
       ['discriminator', fixEncoderSize(getBytesEncoder(), 8)],
-      ['count', getU8Encoder()],
+      ['count', getU64Encoder()],
+      ['bump', getU8Encoder()],
     ]),
     (value) => ({ ...value, discriminator: COUNTER_DISCRIMINATOR })
   );
@@ -60,7 +88,8 @@ export function getCounterEncoder(): FixedSizeEncoder<CounterArgs> {
 export function getCounterDecoder(): FixedSizeDecoder<Counter> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
-    ['count', getU8Decoder()],
+    ['count', getU64Decoder()],
+    ['bump', getU8Decoder()],
   ]);
 }
 
@@ -122,5 +151,5 @@ export async function fetchAllMaybeCounter(
 }
 
 export function getCounterSize(): number {
-  return 9;
+  return 17;
 }

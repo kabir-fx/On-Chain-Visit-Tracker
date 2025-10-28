@@ -14,18 +14,16 @@ import {
   type ReadonlyUint8Array,
 } from 'gill';
 import {
-  type ParsedCloseInstruction,
-  type ParsedDecrementInstruction,
-  type ParsedIncrementInstruction,
   type ParsedInitializeInstruction,
-  type ParsedSetInstruction,
+  type ParsedVisitInstruction,
 } from '../instructions';
 
 export const COUNTER_PROGRAM_ADDRESS =
-  '5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9' as Address<'5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9'>;
+  '4iTkCvhwbbYUvobnobkFN3LkDRiZm1yZoCtvTD2wsKnG' as Address<'4iTkCvhwbbYUvobnobkFN3LkDRiZm1yZoCtvTD2wsKnG'>;
 
 export enum CounterAccount {
   Counter,
+  UserVisit,
 }
 
 export function identifyCounterAccount(
@@ -43,56 +41,31 @@ export function identifyCounterAccount(
   ) {
     return CounterAccount.Counter;
   }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([228, 199, 36, 45, 194, 225, 235, 88])
+      ),
+      0
+    )
+  ) {
+    return CounterAccount.UserVisit;
+  }
   throw new Error(
     'The provided account could not be identified as a counter account.'
   );
 }
 
 export enum CounterInstruction {
-  Close,
-  Decrement,
-  Increment,
   Initialize,
-  Set,
+  Visit,
 }
 
 export function identifyCounterInstruction(
   instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array
 ): CounterInstruction {
   const data = 'data' in instruction ? instruction.data : instruction;
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([98, 165, 201, 177, 108, 65, 206, 96])
-      ),
-      0
-    )
-  ) {
-    return CounterInstruction.Close;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([106, 227, 168, 59, 248, 27, 150, 101])
-      ),
-      0
-    )
-  ) {
-    return CounterInstruction.Decrement;
-  }
-  if (
-    containsBytes(
-      data,
-      fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([11, 18, 104, 9, 104, 174, 59, 33])
-      ),
-      0
-    )
-  ) {
-    return CounterInstruction.Increment;
-  }
   if (
     containsBytes(
       data,
@@ -108,12 +81,12 @@ export function identifyCounterInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([198, 51, 53, 241, 116, 29, 126, 194])
+        new Uint8Array([255, 207, 102, 71, 80, 6, 133, 112])
       ),
       0
     )
   ) {
-    return CounterInstruction.Set;
+    return CounterInstruction.Visit;
   }
   throw new Error(
     'The provided instruction could not be identified as a counter instruction.'
@@ -121,20 +94,11 @@ export function identifyCounterInstruction(
 }
 
 export type ParsedCounterInstruction<
-  TProgram extends string = '5qqBQfUriFSJLFK9xvwswmGvy3zcZcg3aRcYn7xELSJ9',
+  TProgram extends string = '4iTkCvhwbbYUvobnobkFN3LkDRiZm1yZoCtvTD2wsKnG',
 > =
-  | ({
-      instructionType: CounterInstruction.Close;
-    } & ParsedCloseInstruction<TProgram>)
-  | ({
-      instructionType: CounterInstruction.Decrement;
-    } & ParsedDecrementInstruction<TProgram>)
-  | ({
-      instructionType: CounterInstruction.Increment;
-    } & ParsedIncrementInstruction<TProgram>)
   | ({
       instructionType: CounterInstruction.Initialize;
     } & ParsedInitializeInstruction<TProgram>)
   | ({
-      instructionType: CounterInstruction.Set;
-    } & ParsedSetInstruction<TProgram>);
+      instructionType: CounterInstruction.Visit;
+    } & ParsedVisitInstruction<TProgram>);
