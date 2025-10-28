@@ -1,89 +1,85 @@
-# users-counter
+# On-Chain Visit Tracker
 
-This is a Next.js app containing:
+On-Chain Visit Tracker is a decentralized website visit counter built on Solana using Anchor. Each unique wallet can record a single visit to the website, with all visit data stored transparently on-chain and verifiable through Solana's blockchain.
 
-- Tailwind and Shadcn UI for styling
-- [Gill](https://gill.site/) Solana SDK
-- Shadcn [Wallet UI](https://registry.wallet-ui.dev) components
-- A basic Counter Solana program written in Anchor
-- [codama](https://github.com/codama-idl/codama) to generate a JS sdk for the program
-- UI components for interacting with the program
+## User Stories
 
-## Getting Started
+See [User-Story.md](./User-Story.md) for detailed user stories and acceptance criteria.
 
-### Installation
+## Architectural Diagram
 
-#### Download the template
+![On-Chain Visit Tracker Architecture](./docs/architecture-diagram.png)
 
-```shell
-npx create-solana-dapp@latest -t gh:solana-foundation/templates/gill/users-counter
+*Architecture showing the three-layer structure: User Layer (stories & actions), Client Layer (SDK & RPC), and Program Layer (instructions and states).*
+
+## Setup & Usage
+
+> **Prerequisites:** Ensure you have Rust, Anchor framework, and Node.js installed. For local development, you'll need Solana CLI tools.
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/kabir-fx/On-Chain-Visit-Tracker.git
+cd On-Chain-Visit-Tracker
 ```
 
-#### Install Dependencies
+### 2. Install dependencies
 
-```shell
+```bash
 npm install
 ```
 
-## Apps
+### 3. Setup the program
 
-### anchor
+This will sync the program ID, build the program, and generate the TypeScript client.
 
-This is a Solana program written in Rust using the Anchor framework.
-
-#### Commands
-
-You can use any normal anchor commands. Either move to the `anchor` directory and run the `anchor` command or prefix the
-command with `npm`, eg: `npm run anchor`.
-
-#### Sync the program id:
-
-Running this command will create a new keypair in the `anchor/target/deploy` directory and save the address to the
-Anchor config file and update the `declare_id!` macro in the `./src/lib.rs` file of the program. This will also update
-the constant in the `anchor/src/counter-exports.ts` file.
-
-```shell
+```bash
 npm run setup
 ```
 
-#### Build the program:
+### 4. Build the program
 
-```shell
+Build the Anchor program
+
+```bash
 npm run anchor-build
 ```
 
-#### Start the test validator with the program deployed:
+### 5. Run tests
 
-```shell
-npm run anchor-localnet
-```
+Test the smart contract functionality.
 
-#### Run the tests
-
-```shell
+```bash
 npm run anchor-test
 ```
 
-#### Deploy to Devnet
+### 6. Start the web application
 
-```shell
-npm run anchor deploy --provider.cluster devnet
-```
+Start the Next.js frontend application.
 
-### web
-
-This is a React app that uses the Anchor generated client to interact with the Solana program.
-
-#### Commands
-
-Start the app
-
-```shell
+```bash
 npm run dev
 ```
 
-Build the app
+### 8. Deploy to Devnet (optional)
 
-```shell
-npm run build
+Deploy the program to Solana devnet.
+
+```bash
+npm run anchor deploy --provider.cluster devnet
 ```
+
+## Features
+
+- **Initialize Counter**: Create the global visit counter on-chain (one-time setup).
+- **Record Visit**: Users can sign a transaction to record their website visit.
+- **Unique Tracking**: Each wallet address can only record one visit using PDA-based tracking.
+- **View Global Count**: Display the total number of unique visits without transaction fees.
+- **Blockchain Verification**: Verify visit counts using Solana Explorer for transparency.
+
+## Security
+
+- Each wallet can only record one visit, preventing duplicate counting through PDA-based user tracking.
+- The global counter is program-owned (PDA), ensuring only authorized program logic can modify it.
+- All operations are verified on-chain through Solana's program logic.
+- Visit data is tamper-proof and publicly verifiable via blockchain explorers.
+- Uses checked arithmetic to prevent integer overflow attacks.
