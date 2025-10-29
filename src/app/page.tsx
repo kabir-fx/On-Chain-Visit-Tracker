@@ -1,5 +1,5 @@
-import DashboardFeature from '@/features/dashboard/dashboard-feature'
+import UserVisitFeature from '@/features/user-visit/user-visit-feature'
 
-export default function Home() {
-  return <DashboardFeature />
+export default function UserVisitsPage() {
+  return <UserVisitFeature />
 }
