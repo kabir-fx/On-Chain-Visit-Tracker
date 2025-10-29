@@ -1,124 +1,186 @@
 import {
+  address,
+  airdropFactory,
   Blockhash,
   createSolanaClient,
   createTransaction,
   generateKeyPairSigner,
+  getAddressEncoder,
+  getBytesEncoder,
+  getProgramDerivedAddress,
   Instruction,
-  isSolanaError,
   KeyPairSigner,
+  lamports,
   signTransactionMessageWithSigners,
 } from 'gill'
 import {
-  fetchUsersusersusersuserscounter,
-  getCloseInstruction,
-  getDecrementInstruction,
-  getIncrementInstruction,
-  getInitializeInstruction,
-  getSetInstruction,
+  COUNTER_PROGRAM_ADDRESS,
+  getInitializeCounterInstruction,
+  getMarkUserVisitInstruction
 } from '../src'
-// @ts-ignore error TS2307 suggest setting `moduleResolution` but this is already configured
-import { loadKeypairSignerFromFile } from 'gill/node'
+import { describe, it, beforeAll, expect } from 'vitest'
+import { fetchCounter, fetchUserVisit } from '../src/client/js'
 
-const { rpc, sendAndConfirmTransaction } = createSolanaClient({ urlOrMoniker: process.env.ANCHOR_PROVIDER_URL! })
+const { rpc, rpcSubscriptions, sendAndConfirmTransaction } = createSolanaClient({ urlOrMoniker: process.env.ANCHOR_PROVIDER_URL! })
 
-describe('usersusersuserscounter', () => {
+describe('First user visits the counter program', () => {
   let payer: KeyPairSigner
-  let usersusersuserscounter: KeyPairSigner
+  let counterPdaAddress: string
+  const airdrop = airdropFactory({ rpc, rpcSubscriptions });
 
   beforeAll(async () => {
-    usersusersuserscounter = await generateKeyPairSigner()
-    payer = await loadKeypairSignerFromFile(process.env.ANCHOR_WALLET!)
-  })
+    payer = await generateKeyPairSigner()
 
-  it('Initialize Usersusersusersuserscounter', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getInitializeInstruction({ payer: payer, usersusersuserscounter: usersusersuserscounter })
+    await airdrop({
+      commitment: 'confirmed',
+      recipientAddress: payer.address,
+      lamports: lamports(10_000_000n),
+    });
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
-
-    // ASSER
-    const currentUsersusersusersuserscounter = await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    expect(currentUsersusersusersuserscounter.data.count).toEqual(0)
-  })
-
-  it('Increment Usersusersusersuserscounter', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getIncrementInstruction({
-      usersusersuserscounter: usersusersuserscounter.address,
+    // Cal. the counter PDA address using the same seeds as the program
+    const counterPda = await getProgramDerivedAddress({
+      programAddress: COUNTER_PROGRAM_ADDRESS,
+      seeds: [new Uint8Array(Buffer.from('counter'))],
     })
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
-
-    // ASSERT
-    const currentCount = await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    expect(currentCount.data.count).toEqual(1)
+    counterPdaAddress = counterPda[0]
   })
 
-  it('Increment Usersusersusersuserscounter Again', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getIncrementInstruction({ usersusersuserscounter: usersusersuserscounter.address })
+  describe('Initialize Counter', () => {
+    it('should initialize the counter successfully', async () => {
+      expect.assertions(3)
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
+      const ix = getInitializeCounterInstruction({
+        payer: payer,
+        counter: address(counterPdaAddress),
+      })
 
-    // ASSERT
-    const currentCount = await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    expect(currentCount.data.count).toEqual(2)
-  })
+      // ACT
+      await sendAndConfirm({ ix, payer })
 
-  it('Decrement Usersusersusersuserscounter', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getDecrementInstruction({
-      usersusersuserscounter: usersusersuserscounter.address,
+      // ASSERT
+      const counterAccount = await fetchCounter(rpc, address(counterPdaAddress))
+
+      expect(counterAccount.data.count).toEqual(0n)
+      expect(counterAccount.data.bump).toBeDefined()
+      expect(typeof counterAccount.data.bump).toBe('number')
     })
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
+    it('should fail to initalize counter twice', async () => {
+      const ix = getInitializeCounterInstruction({
+        payer: payer,
+        counter: address(counterPdaAddress),
+      })
 
-    // ASSERT
-    const currentCount = await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    expect(currentCount.data.count).toEqual(1)
+      // ACT & ASSERT
+      await expect(sendAndConfirm({ ix, payer })).rejects.toThrow()
+    })
   })
 
-  it('Set usersusersuserscounter value', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getSetInstruction({ usersusersuserscounter: usersusersuserscounter.address, value: 42 })
+  describe('Mark user visit', () => {
+    let user1: KeyPairSigner
+    let user1PdaAddress: string
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
+    let user2: KeyPairSigner
+    let user2PdaAddress: string
 
-    // ASSERT
-    const currentCount = await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    expect(currentCount.data.count).toEqual(42)
-  })
+    beforeAll(async () => {
+      user1 = await generateKeyPairSigner()
 
-  it('Set close the usersusersuserscounter account', async () => {
-    // ARRANGE
-    expect.assertions(1)
-    const ix = getCloseInstruction({
-      payer: payer,
-      usersusersuserscounter: usersusersuserscounter.address,
+      await airdrop({
+        commitment: 'confirmed',
+        recipientAddress: user1.address,
+        lamports: lamports(10_000_000n),
+      });
+
+      const user1Pda = await getProgramDerivedAddress({
+        // programAddress: address(user1.address),
+        programAddress: COUNTER_PROGRAM_ADDRESS,
+        seeds: [
+          getBytesEncoder().encode(new Uint8Array(Buffer.from('user_visit'))),
+
+          // Encode the address as Uint8Array
+          getAddressEncoder().encode(user1.address),
+        ],
+      })
+
+      user1PdaAddress = user1Pda[0]
+
+      user2 = await generateKeyPairSigner()
+
+      await airdrop({
+        commitment: 'confirmed',
+        recipientAddress: user2.address,
+        lamports: lamports(10_000_000n),
+      });
+
+      const user2Pda = await getProgramDerivedAddress({
+        programAddress: COUNTER_PROGRAM_ADDRESS,
+        seeds: [
+          getBytesEncoder().encode(new Uint8Array(Buffer.from('user_visit'))),
+
+          // Encode the address as Uint8Array
+          getAddressEncoder().encode(user2.address),
+        ],
+      })
+
+      user2PdaAddress = user2Pda[0]
+    })
+    it('should increment the count of counter successfully', async () => {
+      expect.assertions(3)
+
+      const ix = getMarkUserVisitInstruction({
+        user: user1,
+        counter: address(counterPdaAddress),
+        userVisit: address(user1PdaAddress),
+      })
+
+      // ACT
+      await sendAndConfirm({ ix, payer: user1 })
+
+      // ASSERT
+      const counterAccount = await fetchCounter(rpc, address(counterPdaAddress))
+      expect(counterAccount.data.count).toEqual(1n)
+
+      const userVisitAccount = await fetchUserVisit(rpc, address(user1PdaAddress))
+      expect(userVisitAccount.data.hasVisited).toBe(true)
+      expect(userVisitAccount.data.user).toBe(user1.address)
     })
 
-    // ACT
-    await sendAndConfirm({ ix, payer })
+    it('should not allow the same user to increment the count again', async () => {
+      expect.assertions(1)
 
-    // ASSERT
-    try {
-      await fetchUsersusersusersuserscounter(rpc, usersusersuserscounter.address)
-    } catch (e) {
-      if (!isSolanaError(e)) {
-        throw new Error(`Unexpected error: ${e}`)
-      }
-      expect(e.message).toEqual(`Account not found at address: ${usersusersuserscounter.address}`)
-    }
+      const ix = getMarkUserVisitInstruction({
+        user: user1,
+        counter: address(counterPdaAddress),
+        userVisit: address(user1PdaAddress),
+      })
+
+      // ACT & ASSERT
+      await expect(sendAndConfirm({ ix, payer: user1 })).rejects.toThrow()
+    })
+
+    it('should increment the count of counter from a different user', async () => {
+      expect.assertions(3)
+
+      const ix = getMarkUserVisitInstruction({
+        user: user2,
+        counter: address(counterPdaAddress),
+        userVisit: address(user2PdaAddress),
+      })
+
+      // ACT
+      await sendAndConfirm({ ix, payer: user2 })
+
+      // ASSERT
+      const counterAccount = await fetchCounter(rpc, address(counterPdaAddress))
+      expect(counterAccount.data.count).toEqual(2n)
+
+      const userVisitAccount = await fetchUserVisit(rpc, address(user2PdaAddress))
+      expect(userVisitAccount.data.hasVisited).toBe(true)
+      expect(userVisitAccount.data.user).toBe(user2.address)
+    })
+
   })
 })
 
