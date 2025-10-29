@@ -6,5 +6,5 @@
  * @see https://github.com/codama-idl/codama
  */
 
-export * from './initialize';
-export * from './visit';
+export * from './initializeCounter';
+export * from './markUserVisit';

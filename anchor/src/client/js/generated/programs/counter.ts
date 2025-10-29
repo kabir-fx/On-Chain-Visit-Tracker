@@ -14,8 +14,8 @@ import {
   type ReadonlyUint8Array,
 } from 'gill';
 import {
-  type ParsedInitializeInstruction,
-  type ParsedVisitInstruction,
+  type ParsedInitializeCounterInstruction,
+  type ParsedMarkUserVisitInstruction,
 } from '../instructions';
 
 export const COUNTER_PROGRAM_ADDRESS =
@@ -58,8 +58,8 @@ export function identifyCounterAccount(
 }
 
 export enum CounterInstruction {
-  Initialize,
-  Visit,
+  InitializeCounter,
+  MarkUserVisit,
 }
 
 export function identifyCounterInstruction(
@@ -70,23 +70,23 @@ export function identifyCounterInstruction(
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([175, 175, 109, 31, 13, 152, 155, 237])
+        new Uint8Array([67, 89, 100, 87, 231, 172, 35, 124])
       ),
       0
     )
   ) {
-    return CounterInstruction.Initialize;
+    return CounterInstruction.InitializeCounter;
   }
   if (
     containsBytes(
       data,
       fixEncoderSize(getBytesEncoder(), 8).encode(
-        new Uint8Array([255, 207, 102, 71, 80, 6, 133, 112])
+        new Uint8Array([235, 35, 156, 205, 98, 48, 131, 180])
       ),
       0
     )
   ) {
-    return CounterInstruction.Visit;
+    return CounterInstruction.MarkUserVisit;
   }
   throw new Error(
     'The provided instruction could not be identified as a counter instruction.'
@@ -97,8 +97,8 @@ export type ParsedCounterInstruction<
   TProgram extends string = '4iTkCvhwbbYUvobnobkFN3LkDRiZm1yZoCtvTD2wsKnG',
 > =
   | ({
-      instructionType: CounterInstruction.Initialize;
-    } & ParsedInitializeInstruction<TProgram>)
+      instructionType: CounterInstruction.InitializeCounter;
+    } & ParsedInitializeCounterInstruction<TProgram>)
   | ({
-      instructionType: CounterInstruction.Visit;
-    } & ParsedVisitInstruction<TProgram>);
+      instructionType: CounterInstruction.MarkUserVisit;
+    } & ParsedMarkUserVisitInstruction<TProgram>);

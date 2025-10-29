@@ -21,7 +21,7 @@ export type Counter = {
   ],
   "instructions": [
     {
-      "name": "initialize",
+      "name": "initializeCounter",
       "docs": [
         "Initialize the global visit counter",
         "",
@@ -44,14 +44,14 @@ export type Counter = {
         "- Payer must sign the transaction"
       ],
       "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
+        67,
+        89,
+        100,
+        87,
+        231,
+        172,
+        35,
+        124
       ],
       "accounts": [
         {
@@ -104,7 +104,7 @@ export type Counter = {
       "args": []
     },
     {
-      "name": "visit",
+      "name": "markUserVisit",
       "docs": [
         "Record a user's visit to the website",
         "",
@@ -130,14 +130,14 @@ export type Counter = {
         "- Validates PDA ownership and seeds"
       ],
       "discriminator": [
-        255,
-        207,
-        102,
-        71,
-        80,
-        6,
-        133,
-        112
+        235,
+        35,
+        156,
+        205,
+        98,
+        48,
+        131,
+        180
       ],
       "accounts": [
         {

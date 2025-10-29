@@ -10,6 +10,7 @@ import {
   combineCodec,
   fixDecoderSize,
   fixEncoderSize,
+  getAddressEncoder,
   getBytesDecoder,
   getBytesEncoder,
   getProgramDerivedAddress,
@@ -32,20 +33,27 @@ import {
   type WritableSignerAccount,
 } from 'gill';
 import { COUNTER_PROGRAM_ADDRESS } from '../programs';
-import { getAccountMetaFactory, type ResolvedAccount } from '../shared';
+import {
+  expectAddress,
+  getAccountMetaFactory,
+  type ResolvedAccount,
+} from '../shared';
 
-export const INITIALIZE_DISCRIMINATOR = new Uint8Array([
-  175, 175, 109, 31, 13, 152, 155, 237,
+export const MARK_USER_VISIT_DISCRIMINATOR = new Uint8Array([
+  235, 35, 156, 205, 98, 48, 131, 180,
 ]);
 
-export function getInitializeDiscriminatorBytes() {
-  return fixEncoderSize(getBytesEncoder(), 8).encode(INITIALIZE_DISCRIMINATOR);
+export function getMarkUserVisitDiscriminatorBytes() {
+  return fixEncoderSize(getBytesEncoder(), 8).encode(
+    MARK_USER_VISIT_DISCRIMINATOR
+  );
 }
 
-export type InitializeInstruction<
+export type MarkUserVisitInstruction<
   TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
-  TAccountPayer extends string | AccountMeta<string> = string,
+  TAccountUser extends string | AccountMeta<string> = string,
   TAccountCounter extends string | AccountMeta<string> = string,
+  TAccountUserVisit extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends
     | string
     | AccountMeta<string> = '11111111111111111111111111111111',
@@ -54,13 +62,15 @@ export type InitializeInstruction<
   InstructionWithData<ReadonlyUint8Array> &
   InstructionWithAccounts<
     [
-      TAccountPayer extends string
-        ? WritableSignerAccount<TAccountPayer> &
-            AccountSignerMeta<TAccountPayer>
-        : TAccountPayer,
+      TAccountUser extends string
+        ? WritableSignerAccount<TAccountUser> & AccountSignerMeta<TAccountUser>
+        : TAccountUser,
       TAccountCounter extends string
         ? WritableAccount<TAccountCounter>
         : TAccountCounter,
+      TAccountUserVisit extends string
+        ? WritableAccount<TAccountUserVisit>
+        : TAccountUserVisit,
       TAccountSystemProgram extends string
         ? ReadonlyAccount<TAccountSystemProgram>
         : TAccountSystemProgram,
@@ -68,77 +78,92 @@ export type InitializeInstruction<
     ]
   >;
 
-export type InitializeInstructionData = { discriminator: ReadonlyUint8Array };
+export type MarkUserVisitInstructionData = {
+  discriminator: ReadonlyUint8Array;
+};
 
-export type InitializeInstructionDataArgs = {};
+export type MarkUserVisitInstructionDataArgs = {};
 
-export function getInitializeInstructionDataEncoder(): FixedSizeEncoder<InitializeInstructionDataArgs> {
+export function getMarkUserVisitInstructionDataEncoder(): FixedSizeEncoder<MarkUserVisitInstructionDataArgs> {
   return transformEncoder(
     getStructEncoder([['discriminator', fixEncoderSize(getBytesEncoder(), 8)]]),
-    (value) => ({ ...value, discriminator: INITIALIZE_DISCRIMINATOR })
+    (value) => ({ ...value, discriminator: MARK_USER_VISIT_DISCRIMINATOR })
   );
 }
 
-export function getInitializeInstructionDataDecoder(): FixedSizeDecoder<InitializeInstructionData> {
+export function getMarkUserVisitInstructionDataDecoder(): FixedSizeDecoder<MarkUserVisitInstructionData> {
   return getStructDecoder([
     ['discriminator', fixDecoderSize(getBytesDecoder(), 8)],
   ]);
 }
 
-export function getInitializeInstructionDataCodec(): FixedSizeCodec<
-  InitializeInstructionDataArgs,
-  InitializeInstructionData
+export function getMarkUserVisitInstructionDataCodec(): FixedSizeCodec<
+  MarkUserVisitInstructionDataArgs,
+  MarkUserVisitInstructionData
 > {
   return combineCodec(
-    getInitializeInstructionDataEncoder(),
-    getInitializeInstructionDataDecoder()
+    getMarkUserVisitInstructionDataEncoder(),
+    getMarkUserVisitInstructionDataDecoder()
   );
 }
 
-export type InitializeAsyncInput<
-  TAccountPayer extends string = string,
+export type MarkUserVisitAsyncInput<
+  TAccountUser extends string = string,
   TAccountCounter extends string = string,
+  TAccountUserVisit extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   /**
-   * The account that will pay for creating the counter account
-   * Must be a signer to authorize the transaction
+   * The wallet address of the user recording their visit
+   * Must be a signer to prove ownership and prevent spoofing
    */
-  payer: TransactionSigner<TAccountPayer>;
+  user: TransactionSigner<TAccountUser>;
   /**
-   * The global counter account that will store the total visit count
+   * The global counter account that tracks total unique visits
    *
-   * # PDA Details
+   * # PDA Verification
    * - Seeds: `["counter"]`
-   * - Created with `init` constraint (fails if account already exists)
-   * - Bump seed stored in the account for future reference
-   * - Space allocated: 8 (discriminator) + Counter::INIT_SPACE
+   * - Must exist (created by initialize instruction)
+   * - Bump verified against stored value for security
    */
   counter?: Address<TAccountCounter>;
   /**
+   * The user-specific visit tracking account
+   *
+   * # PDA Details
+   * - Seeds: `["user_visit", user_pubkey]`
+   * - Created per user to track their visit status
+   * - `init_if_needed` allows first-time creation but reuses existing accounts
+   * - Prevents duplicate visits from same wallet
+   */
+  userVisit?: Address<TAccountUserVisit>;
+  /**
    * The Solana System Program
-   * Required for creating new accounts on the blockchain
+   * Required for creating new user visit accounts
    */
   systemProgram?: Address<TAccountSystemProgram>;
 };
 
-export async function getInitializeInstructionAsync<
-  TAccountPayer extends string,
+export async function getMarkUserVisitInstructionAsync<
+  TAccountUser extends string,
   TAccountCounter extends string,
+  TAccountUserVisit extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: InitializeAsyncInput<
-    TAccountPayer,
+  input: MarkUserVisitAsyncInput<
+    TAccountUser,
     TAccountCounter,
+    TAccountUserVisit,
     TAccountSystemProgram
   >,
   config?: { programAddress?: TProgramAddress }
 ): Promise<
-  InitializeInstruction<
+  MarkUserVisitInstruction<
     TProgramAddress,
-    TAccountPayer,
+    TAccountUser,
     TAccountCounter,
+    TAccountUserVisit,
     TAccountSystemProgram
   >
 > {
@@ -147,8 +172,9 @@ export async function getInitializeInstructionAsync<
 
   // Original accounts.
   const originalAccounts = {
-    payer: { value: input.payer ?? null, isWritable: true },
+    user: { value: input.user ?? null, isWritable: true },
     counter: { value: input.counter ?? null, isWritable: true },
+    userVisit: { value: input.userVisit ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -167,6 +193,17 @@ export async function getInitializeInstructionAsync<
       ],
     });
   }
+  if (!accounts.userVisit.value) {
+    accounts.userVisit.value = await getProgramDerivedAddress({
+      programAddress,
+      seeds: [
+        getBytesEncoder().encode(
+          new Uint8Array([117, 115, 101, 114, 95, 118, 105, 115, 105, 116])
+        ),
+        getAddressEncoder().encode(expectAddress(accounts.user.value)),
+      ],
+    });
+  }
   if (!accounts.systemProgram.value) {
     accounts.systemProgram.value =
       '11111111111111111111111111111111' as Address<'11111111111111111111111111111111'>;
@@ -175,59 +212,78 @@ export async function getInitializeInstructionAsync<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.user),
       getAccountMeta(accounts.counter),
+      getAccountMeta(accounts.userVisit),
       getAccountMeta(accounts.systemProgram),
     ],
-    data: getInitializeInstructionDataEncoder().encode({}),
+    data: getMarkUserVisitInstructionDataEncoder().encode({}),
     programAddress,
-  } as InitializeInstruction<
+  } as MarkUserVisitInstruction<
     TProgramAddress,
-    TAccountPayer,
+    TAccountUser,
     TAccountCounter,
+    TAccountUserVisit,
     TAccountSystemProgram
   >);
 }
 
-export type InitializeInput<
-  TAccountPayer extends string = string,
+export type MarkUserVisitInput<
+  TAccountUser extends string = string,
   TAccountCounter extends string = string,
+  TAccountUserVisit extends string = string,
   TAccountSystemProgram extends string = string,
 > = {
   /**
-   * The account that will pay for creating the counter account
-   * Must be a signer to authorize the transaction
+   * The wallet address of the user recording their visit
+   * Must be a signer to prove ownership and prevent spoofing
    */
-  payer: TransactionSigner<TAccountPayer>;
+  user: TransactionSigner<TAccountUser>;
   /**
-   * The global counter account that will store the total visit count
+   * The global counter account that tracks total unique visits
    *
-   * # PDA Details
+   * # PDA Verification
    * - Seeds: `["counter"]`
-   * - Created with `init` constraint (fails if account already exists)
-   * - Bump seed stored in the account for future reference
-   * - Space allocated: 8 (discriminator) + Counter::INIT_SPACE
+   * - Must exist (created by initialize instruction)
+   * - Bump verified against stored value for security
    */
   counter: Address<TAccountCounter>;
   /**
+   * The user-specific visit tracking account
+   *
+   * # PDA Details
+   * - Seeds: `["user_visit", user_pubkey]`
+   * - Created per user to track their visit status
+   * - `init_if_needed` allows first-time creation but reuses existing accounts
+   * - Prevents duplicate visits from same wallet
+   */
+  userVisit: Address<TAccountUserVisit>;
+  /**
    * The Solana System Program
-   * Required for creating new accounts on the blockchain
+   * Required for creating new user visit accounts
    */
   systemProgram?: Address<TAccountSystemProgram>;
 };
 
-export function getInitializeInstruction<
-  TAccountPayer extends string,
+export function getMarkUserVisitInstruction<
+  TAccountUser extends string,
   TAccountCounter extends string,
+  TAccountUserVisit extends string,
   TAccountSystemProgram extends string,
   TProgramAddress extends Address = typeof COUNTER_PROGRAM_ADDRESS,
 >(
-  input: InitializeInput<TAccountPayer, TAccountCounter, TAccountSystemProgram>,
+  input: MarkUserVisitInput<
+    TAccountUser,
+    TAccountCounter,
+    TAccountUserVisit,
+    TAccountSystemProgram
+  >,
   config?: { programAddress?: TProgramAddress }
-): InitializeInstruction<
+): MarkUserVisitInstruction<
   TProgramAddress,
-  TAccountPayer,
+  TAccountUser,
   TAccountCounter,
+  TAccountUserVisit,
   TAccountSystemProgram
 > {
   // Program address.
@@ -235,8 +291,9 @@ export function getInitializeInstruction<
 
   // Original accounts.
   const originalAccounts = {
-    payer: { value: input.payer ?? null, isWritable: true },
+    user: { value: input.user ?? null, isWritable: true },
     counter: { value: input.counter ?? null, isWritable: true },
+    userVisit: { value: input.userVisit ?? null, isWritable: true },
     systemProgram: { value: input.systemProgram ?? null, isWritable: false },
   };
   const accounts = originalAccounts as Record<
@@ -253,59 +310,70 @@ export function getInitializeInstruction<
   const getAccountMeta = getAccountMetaFactory(programAddress, 'programId');
   return Object.freeze({
     accounts: [
-      getAccountMeta(accounts.payer),
+      getAccountMeta(accounts.user),
       getAccountMeta(accounts.counter),
+      getAccountMeta(accounts.userVisit),
       getAccountMeta(accounts.systemProgram),
     ],
-    data: getInitializeInstructionDataEncoder().encode({}),
+    data: getMarkUserVisitInstructionDataEncoder().encode({}),
     programAddress,
-  } as InitializeInstruction<
+  } as MarkUserVisitInstruction<
     TProgramAddress,
-    TAccountPayer,
+    TAccountUser,
     TAccountCounter,
+    TAccountUserVisit,
     TAccountSystemProgram
   >);
 }
 
-export type ParsedInitializeInstruction<
+export type ParsedMarkUserVisitInstruction<
   TProgram extends string = typeof COUNTER_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;
   accounts: {
     /**
-     * The account that will pay for creating the counter account
-     * Must be a signer to authorize the transaction
+     * The wallet address of the user recording their visit
+     * Must be a signer to prove ownership and prevent spoofing
      */
-    payer: TAccountMetas[0];
+    user: TAccountMetas[0];
     /**
-     * The global counter account that will store the total visit count
+     * The global counter account that tracks total unique visits
      *
-     * # PDA Details
+     * # PDA Verification
      * - Seeds: `["counter"]`
-     * - Created with `init` constraint (fails if account already exists)
-     * - Bump seed stored in the account for future reference
-     * - Space allocated: 8 (discriminator) + Counter::INIT_SPACE
+     * - Must exist (created by initialize instruction)
+     * - Bump verified against stored value for security
      */
     counter: TAccountMetas[1];
     /**
-     * The Solana System Program
-     * Required for creating new accounts on the blockchain
+     * The user-specific visit tracking account
+     *
+     * # PDA Details
+     * - Seeds: `["user_visit", user_pubkey]`
+     * - Created per user to track their visit status
+     * - `init_if_needed` allows first-time creation but reuses existing accounts
+     * - Prevents duplicate visits from same wallet
      */
-    systemProgram: TAccountMetas[2];
+    userVisit: TAccountMetas[2];
+    /**
+     * The Solana System Program
+     * Required for creating new user visit accounts
+     */
+    systemProgram: TAccountMetas[3];
   };
-  data: InitializeInstructionData;
+  data: MarkUserVisitInstructionData;
 };
 
-export function parseInitializeInstruction<
+export function parseMarkUserVisitInstruction<
   TProgram extends string,
   TAccountMetas extends readonly AccountMeta[],
 >(
   instruction: Instruction<TProgram> &
     InstructionWithAccounts<TAccountMetas> &
     InstructionWithData<ReadonlyUint8Array>
-): ParsedInitializeInstruction<TProgram, TAccountMetas> {
-  if (instruction.accounts.length < 3) {
+): ParsedMarkUserVisitInstruction<TProgram, TAccountMetas> {
+  if (instruction.accounts.length < 4) {
     // TODO: Coded error.
     throw new Error('Not enough accounts');
   }
@@ -318,10 +386,11 @@ export function parseInitializeInstruction<
   return {
     programAddress: instruction.programAddress,
     accounts: {
-      payer: getNextAccount(),
+      user: getNextAccount(),
       counter: getNextAccount(),
+      userVisit: getNextAccount(),
       systemProgram: getNextAccount(),
     },
-    data: getInitializeInstructionDataDecoder().decode(instruction.data),
+    data: getMarkUserVisitInstructionDataDecoder().decode(instruction.data),
   };
 }

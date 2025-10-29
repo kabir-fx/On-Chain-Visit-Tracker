@@ -4,19 +4,15 @@ import { getProgramAccountsDecoded } from './helpers/get-program-accounts-decode
 import { Counter, COUNTER_DISCRIMINATOR, COUNTER_PROGRAM_ADDRESS, getCounterDecoder } from './client/js'
 import CounterIDL from '../target/idl/counter.json'
 
-export type CounterAccount = Account<Counter, string>
-
 // Re-export the generated IDL and type
 export { CounterIDL }
-
-export * from './client/js'
+export { COUNTER_PROGRAM_ADDRESS }
 
 // Explicitly export instruction functions
-export { getInitializeInstruction } from './client/js/generated/instructions/initialize'
-export { getIncrementInstruction } from './client/js/generated/instructions/increment'
-export { getDecrementInstruction } from './client/js/generated/instructions/decrement'
-export { getSetInstruction } from './client/js/generated/instructions/set'
-export { getCloseInstruction } from './client/js/generated/instructions/close'
+export { getInitializeCounterInstruction, getInitializeCounterInstructionAsync } from './client/js/generated/instructions/initializeCounter'
+export { getMarkUserVisitInstruction, getMarkUserVisitInstructionAsync } from './client/js/generated/instructions/markUserVisit'
+
+export type CounterAccount = Account<Counter, string>
 
 export function getCounterProgramAccounts(rpc: SolanaClient['rpc']) {
   return getProgramAccountsDecoded(rpc, {
