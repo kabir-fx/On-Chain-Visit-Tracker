@@ -2,6 +2,8 @@
 
 On-Chain Visit Tracker is a decentralized website visit counter built on Solana using Anchor. Each unique wallet can record a single visit to the website, with all visit data stored transparently on-chain and verifiable through Solana's blockchain.
 
+Link to website - https://visit-tracker-blond.vercel.app/
+
 ## User Stories
 
 See [User-Story.md](./User-Story.md) for detailed user stories and acceptance criteria.
@@ -52,7 +54,15 @@ Test the smart contract functionality.
 npm run anchor-test
 ```
 
-### 6. Start the web application
+### 6. Deploy the contract
+
+Deploy the program to Solana devnet/localnet.
+
+```bash
+npm run anchor deploy
+```
+
+### 7. Start the web application
 
 Start the Next.js frontend application.
 
@@ -60,13 +70,7 @@ Start the Next.js frontend application.
 npm run dev
 ```
 
-### 8. Deploy to Devnet (optional)
-
-Deploy the program to Solana devnet.
-
-```bash
-npm run anchor deploy --provider.cluster devnet
-```
+#### Note - ensure that your account has enough SOL and your wallet is configured to the respective chain.
 
 ## Features
 
